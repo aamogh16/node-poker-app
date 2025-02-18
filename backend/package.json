@@ -3,12 +3,20 @@
   "packageManager": "yarn@4.2.2",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@chevtek/poker-engine": "^1.2.14",
-    "express": "^4.21.2"
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "ws": "^8.5.14"
   },
   "devDependencies": {
+    "@types/cors": "^2",
     "@types/express": "^5.0.0",
-    "@types/ws": "^8.5.14"
+    "@types/ws": "^8.5.14",
+    "tsx": "^4.7.0"
+  },
+  "scripts": {
+    "dev": "tsx watch src/app.ts"
   }
 }

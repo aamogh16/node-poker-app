@@ -1,5 +1,5 @@
 import { Table } from "@chevtek/poker-engine";
-import { WebSocket } from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 
 interface ConnectedPlayer {
   id: string;
@@ -10,10 +10,12 @@ interface ConnectedPlayer {
 export class PokerGameService {
   private table: Table;
   private connectedPlayers: Map<string, ConnectedPlayer>;
+  private wss: WebSocketServer;
 
-  constructor() {
+  constructor(wss: WebSocketServer) {
     this.table = new Table(1000, 5, 10);
     this.connectedPlayers = new Map();
+    this.wss = wss;
   }
 
   handleConnection(socket: WebSocket) {
@@ -54,6 +56,9 @@ export class PokerGameService {
           message.amount
         );
         break;
+      case "startGame": // New message type
+        this.startNewHand();
+        break;
       default:
         this.sendError(socket, "Unknown message type");
     }
@@ -81,11 +86,11 @@ export class PokerGameService {
         players: this.getPublicPlayerStates(),
       });
 
-      // Start the game if we have enough players
-      if (this.table.players.filter((p) => p !== null).length >= 2) {
-        this.startNewHand();
-      }
-    } catch (error) {
+      // Remove auto-start
+      // if (this.table.players.filter((p) => p !== null).length >= 2) {
+      //   this.startNewHand();
+      // }
+    } catch (error: any) {
       this.sendError(socket, error.message);
     }
   }
@@ -143,7 +148,7 @@ export class PokerGameService {
       if (!this.table.currentRound) {
         this.handleHandComplete();
       }
-    } catch (error) {
+    } catch (error: any) {
       this.sendError(
         this.connectedPlayers.get(playerId)?.socket!,
         error.message
@@ -172,8 +177,8 @@ export class PokerGameService {
       })),
     });
 
-    // Start new hand after delay
-    setTimeout(() => this.startNewHand(), 3000);
+    // Remove auto-start of next hand
+    // setTimeout(() => this.startNewHand(), 3000);
   }
 
   private getPlayerState(playerId: string) {
@@ -208,9 +213,13 @@ export class PokerGameService {
 
   private broadcast(message: any) {
     const messageStr = JSON.stringify(message);
-    for (const player of this.connectedPlayers.values()) {
-      player.socket.send(messageStr);
-    }
+    console.log("Broadcasting message to all clients:", messageStr);
+
+    this.wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(messageStr);
+      }
+    });
   }
 
   private broadcastGameState() {
@@ -246,11 +255,16 @@ export class PokerGameService {
   private sendToPlayer(playerId: string, message: any) {
     const player = this.connectedPlayers.get(playerId);
     if (player) {
-      player.socket.send(JSON.stringify(message));
+      const messageStr = JSON.stringify(message);
+      console.log(`Sending message to player ${playerId}:`, messageStr);
+      player.socket.send(messageStr);
     }
   }
 
   private sendError(socket: WebSocket, error: string) {
-    socket.send(JSON.stringify({ type: "error", error }));
+    const message = { type: "error", error };
+    const messageStr = JSON.stringify(message);
+    console.log("Sending error message:", messageStr);
+    socket.send(messageStr);
   }
 }

@@ -11,5 +11,8 @@
     "dev:frontend": "yarn workspace frontend dev",
     "dev:backend": "yarn workspace backend dev",
     "dev": "yarn dev:frontend & yarn dev:backend"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
   }
 }
