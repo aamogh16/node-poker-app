@@ -10,7 +10,11 @@
   "scripts": {
     "dev:frontend": "yarn workspace frontend dev",
     "dev:backend": "yarn workspace backend dev",
-    "dev": "yarn dev:frontend & yarn dev:backend"
+    "dev": "yarn dev:frontend & yarn dev:backend",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up",
+    "docker:down": "docker compose down",
+    "docker:dev": "docker compose up --build"
   },
   "devDependencies": {
     "tsx": "^4.19.2"
