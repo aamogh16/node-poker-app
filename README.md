@@ -1,6 +1,6 @@
 # node-poker-app
 
-This project is a full-stack poker application built using the @chevtek/poker-engine library. It provides a server for hosting poker games and a frontend interface for players to interact with the game.
+This project is a full-stack poker application built using the `@chevtek/poker-engine` library. It provides a server for hosting poker games and a frontend interface for players to interact with the game.
 
 ## Description
 
@@ -8,7 +8,7 @@ The node-poker-app consists of a backend server that manages the game state and 
 
 ## Libraries Used
 
-- Backend: @chevtek/poker-engine - primarily built on this engine.
+- Backend: `@chevtek/poker-engine` - primarily built on this engine.
 - Frontend: React with TypeScript
 
 ## How to Run
