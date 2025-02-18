@@ -1,0 +1,14 @@
+{
+  "name": "backend",
+  "packageManager": "yarn@4.2.2",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@chevtek/poker-engine": "^1.2.14",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/ws": "^8.5.14"
+  }
+}
