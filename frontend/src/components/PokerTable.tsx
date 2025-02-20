@@ -6,8 +6,12 @@ import CardComponent from "./Card";
 import PlayerSpot from "./PlayerSpot";
 
 export default function PokerTable() {
-  const { gameState } = useGameState();
+  const { gameState, performAction } = useGameState();
   const { connected } = useWebSocket();
+
+  const handleNewGame = () => {
+    performAction("startGame");
+  };
 
   if (!connected) {
     return (
@@ -18,7 +22,15 @@ export default function PokerTable() {
   }
 
   return (
-    <div className="min-h-screen bg-green-800 p-8">
+    <div className="min-h-screen bg-green-800 p-8 relative">
+      {/* New Game Button */}
+      <button
+        onClick={handleNewGame}
+        className="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200"
+      >
+        New Game
+      </button>
+
       {/* Community Cards */}
       <div className="flex justify-center gap-2 mb-8 min-h-[96px]">
         {gameState?.communityCards?.map((card, i) => (

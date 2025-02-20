@@ -56,12 +56,29 @@ export class PokerGameService {
           message.amount
         );
         break;
-      case "startGame": // New message type
-        this.startNewHand();
+      case "startGame":
+        this.restartGame();
         break;
       default:
         this.sendError(socket, "Unknown message type");
     }
+  }
+
+  private restartGame() {
+    // Create fresh table
+    this.table = new Table(1000, 5, 10);
+
+    // Clear all connected players
+    this.connectedPlayers.clear();
+
+    // Broadcast the reset to all players
+    this.broadcast({
+      type: "gameReset",
+      message: "Game has been reset. All players must rejoin.",
+    });
+
+    // Broadcast empty game state
+    this.broadcastGameState();
   }
 
   private handlePlayerJoin(
@@ -157,8 +174,16 @@ export class PokerGameService {
   }
 
   private startNewHand() {
-    this.table.dealCards();
-    this.broadcastGameState();
+    try {
+      this.table.dealCards();
+      this.broadcastGameState();
+    } catch (error) {
+      console.error("Error starting new hand:", error);
+      this.broadcast({
+        type: "error",
+        error: "Failed to start new hand. Make sure there are enough players.",
+      });
+    }
   }
 
   private handleHandComplete() {
