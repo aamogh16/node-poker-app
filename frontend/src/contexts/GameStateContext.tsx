@@ -119,7 +119,13 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
 
   const performAction = useCallback(
     (action: string, amount?: number) => {
-      sendMessage({ type: "action", action, amount });
+      if (action === "startGame") {
+        sendMessage({ type: "startGame" });
+      } else if (action === "restart") {
+        sendMessage({ type: "restart" });
+      } else {
+        sendMessage({ type: "action", action, amount });
+      }
     },
     [sendMessage]
   );

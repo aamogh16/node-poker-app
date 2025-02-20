@@ -13,6 +13,10 @@ export default function PokerTable() {
     performAction("startGame");
   };
 
+  const handleRestart = () => {
+    performAction("restart");
+  };
+
   if (!connected) {
     return (
       <div className="min-h-screen bg-green-800 flex items-center justify-center">
@@ -23,13 +27,21 @@ export default function PokerTable() {
 
   return (
     <div className="min-h-screen bg-green-800 p-8 relative">
-      {/* New Game Button */}
-      <button
-        onClick={handleNewGame}
-        className="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200"
-      >
-        New Game
-      </button>
+      {/* Control Buttons */}
+      <div className="absolute top-4 right-4 flex gap-4">
+        <button
+          onClick={handleNewGame}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200"
+        >
+          Deal New Hand
+        </button>
+        <button
+          onClick={handleRestart}
+          className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200"
+        >
+          Restart Game
+        </button>
+      </div>
 
       {/* Community Cards */}
       <div className="flex justify-center gap-2 mb-8 min-h-[96px]">
