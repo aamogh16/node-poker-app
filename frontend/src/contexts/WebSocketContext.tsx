@@ -34,7 +34,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
     function connect() {
       console.log("Attempting to create WebSocket connection...");
-      ws = new WebSocket(`ws://${process.env.NEXT_PUBLIC_WS_URL}:3001`);
+      ws = new WebSocket(`ws://${process.env.NEXT_PUBLIC_WS_URL}:${process.env.NEXT_PUBLIC_WS_PORT}`);
 
       ws.addEventListener("open", () => {
         console.log("WebSocket connection established");
