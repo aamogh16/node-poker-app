@@ -5,7 +5,7 @@ This server hosts a poker game that bots can connect to via WebSocket. The serve
 ## Connecting Your Bot
 
 Connect to the WebSocket server at: `ws://SERVER_IP:${port}`
-- Define port in `.env` file
+- Define port in `.env` file: `PORT=...`
 
 ## Protocol
 
