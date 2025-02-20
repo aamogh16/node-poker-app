@@ -4,6 +4,9 @@ import { createServer } from "http";
 import { WebSocketServer } from "ws";
 import { PokerGameService } from "./services/PokerGameService";
 
+import * as dotenv from "dotenv";
+dotenv.config();
+
 const app = express();
 app.use(cors());
 

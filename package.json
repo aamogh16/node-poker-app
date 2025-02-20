@@ -18,5 +18,8 @@
   },
   "devDependencies": {
     "tsx": "^4.19.2"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
   }
 }

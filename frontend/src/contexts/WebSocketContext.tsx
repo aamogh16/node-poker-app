@@ -8,6 +8,10 @@ import React, {
   useState,
 } from "react";
 
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
 type MessageHandler = (message: any) => void;
 
 interface WebSocketContextType {
@@ -34,7 +38,9 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
     function connect() {
       console.log("Attempting to create WebSocket connection...");
-      ws = new WebSocket(`ws://${process.env.NEXT_PUBLIC_WS_URL}:${process.env.NEXT_PUBLIC_WS_PORT}`);
+      ws = new WebSocket(
+        `ws://${process.env.NEXT_PUBLIC_WS_URL}:${process.env.NEXT_PUBLIC_WS_PORT}`
+      );
 
       ws.addEventListener("open", () => {
         console.log("WebSocket connection established");
