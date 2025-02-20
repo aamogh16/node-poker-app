@@ -92,7 +92,7 @@ wss.on("message", (message) => {
 });
 
 server.listen({ port: Number(PORT), host: HOST }, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`);
+  console.log(`Server running on ${PORT}`);
   console.log(`WebSocket server ready for bot connections`);
 });
 
