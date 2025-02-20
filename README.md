@@ -11,6 +11,19 @@ The node-poker-app consists of a backend server that manages the game state and 
 - Backend: `@chevtek/poker-engine` - primarily built on this engine.
 - Frontend: React with TypeScript
 
+## Required Environment Variables
+
+Frontend (these should point to backend)
+```
+NEXT_PUBLIC_WS_URL=
+NEXT_PUBLIC_PORT=
+```
+
+Backend
+```
+PORT=
+```
+
 ## How to Run
 
 1. Open two separate terminal windows.
