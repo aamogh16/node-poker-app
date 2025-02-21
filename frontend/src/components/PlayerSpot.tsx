@@ -9,15 +9,10 @@ interface PlayerSpotProps {
     isCurrentActor: boolean;
   } | null;
   isCurrentPlayer: boolean;
-  holeCards: any | null;
+  holeCards: unknown | null;
 }
 
-export default function PlayerSpot({
-  position,
-  player,
-  isCurrentPlayer,
-  holeCards,
-}: PlayerSpotProps) {
+export default function PlayerSpot({ position, player }: PlayerSpotProps) {
   // Manual position mapping for 9 seats
   const getPosition = (pos: number): { x: number; y: number } => {
     switch (pos) {
