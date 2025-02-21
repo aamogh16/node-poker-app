@@ -142,9 +142,17 @@ export class PokerGameService {
         case "raise":
           if (amount === undefined)
             throw new Error("Amount required for raise");
-          // Allow any amount for all-in, otherwise enforce minimum raise
+
+          // Special case for small blind raising to match big blind pre-flop
+          const isPreFlop = !this.table.communityCards.length;
+          const isSmallBlindPosition = player.bet === this.table.smallBlind;
+          const isRaisingToBigBlind =
+            isPreFlop && isSmallBlindPosition && amount === this.table.bigBlind;
+
+          // Allow any amount for all-in or small blind to big blind raise
           if (
             !isAllIn &&
+            !isRaisingToBigBlind &&
             amount < (this.table.lastRaise ?? this.table.bigBlind)
           ) {
             throw new Error("Raise must be at least the minimum raise amount");
