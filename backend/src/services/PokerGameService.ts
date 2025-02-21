@@ -266,15 +266,18 @@ export class PokerGameService {
 
     // Send private state to each player
     for (const [playerId, player] of this.connectedPlayers) {
+      const currentPlayer = this.table.players.find((p) => p?.id === playerId);
+      const isCurrentActor = this.table.currentActor?.id === playerId;
+
       this.sendToPlayer(playerId, {
         type: "privateState",
         state: {
-          holeCards: this.table.players.find((p) => p?.id === playerId)
-            ?.holeCards,
-          availableActions:
-            this.table.currentActor?.id === playerId
-              ? this.table.currentActor.legalActions()
-              : [],
+          holeCards: currentPlayer?.holeCards,
+          availableActions: isCurrentActor
+            ? this.table.currentActor?.legalActions()
+            : [],
+          minRaise: this.table.lastRaise ?? this.table.bigBlind,
+          maxBet: currentPlayer?.stackSize ?? 0,
         },
       });
     }
