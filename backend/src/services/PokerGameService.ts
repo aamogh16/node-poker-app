@@ -122,6 +122,9 @@ export class PokerGameService {
       if (this.table.currentActor?.id !== playerId)
         throw new Error("Not your turn");
 
+      // Check if it's an all-in bet/raise
+      const isAllIn = amount === player.stackSize;
+
       switch (action) {
         case "call":
           player.callAction();
@@ -134,11 +137,22 @@ export class PokerGameService {
           break;
         case "bet":
           if (amount === undefined) throw new Error("Amount required for bet");
+          // Allow any amount for all-in, otherwise enforce minimum bet
+          if (!isAllIn && amount < this.table.bigBlind) {
+            throw new Error("Bet must be at least the big blind");
+          }
           player.betAction(amount);
           break;
         case "raise":
           if (amount === undefined)
             throw new Error("Amount required for raise");
+          // Allow any amount for all-in, otherwise enforce minimum raise
+          if (
+            !isAllIn &&
+            amount < (this.table.lastRaise ?? this.table.bigBlind)
+          ) {
+            throw new Error("Raise must be at least the minimum raise amount");
+          }
           player.raiseAction(amount);
           break;
         default:
