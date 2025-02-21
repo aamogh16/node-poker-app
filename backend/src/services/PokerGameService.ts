@@ -150,7 +150,7 @@ export class PokerGameService {
             isPreFlop && isSmallBlindPosition && amount === this.table.bigBlind;
 
           // For raises, the amount must increase the current bet by at least the big blind
-          const raiseAmount = amount! - this.table.currentBet;
+          const raiseAmount = amount! - (this.table.currentBet || 0);
           if (
             !isAllIn &&
             !isRaisingToBigBlind &&
