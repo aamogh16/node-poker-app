@@ -11,29 +11,30 @@ The node-poker-app consists of a backend server that manages the game state and 
 - Backend: `@chevtek/poker-engine` - primarily built on this engine.
 - Frontend: React with TypeScript
 
-## Required Environment Variables
+## Environment Setup
 
-Frontend (these should point to backend)
-```
-NEXT_PUBLIC_WS_URL=
-NEXT_PUBLIC_PORT=
-```
+Create a `.env` file in the root directory with the following variables:
 
-Backend
-```
-PORT=
+```bash
+# Backend
+PORT=3001
+HOST=0.0.0.0
+
+# Frontend
+NEXT_PUBLIC_WS_URL=ws://localhost:3001
 ```
 
 ## How to Run
 
-1. Open two separate terminal windows.
-2. In the first terminal:
-   ```
+1. Create the `.env` file in the root directory as described above
+2. Open two separate terminal windows.
+3. In the first terminal:
+   ```bash
    cd backend
    yarn dev
    ```
-3. In the second terminal:
-   ```
+4. In the second terminal:
+   ```bash
    cd frontend
    yarn dev
    ```

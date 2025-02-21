@@ -1,11 +1,13 @@
 import cors from "cors";
+import * as dotenv from "dotenv";
 import express from "express";
 import { createServer } from "http";
+import path from "path";
 import { WebSocketServer } from "ws";
 import { PokerGameService } from "./services/PokerGameService";
 
-import * as dotenv from "dotenv";
-dotenv.config();
+// Load .env from root directory
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const app = express();
 app.use(cors());
