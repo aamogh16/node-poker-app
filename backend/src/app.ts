@@ -3,8 +3,13 @@ import * as dotenv from "dotenv";
 import express from "express";
 import { createServer } from "http";
 import path from "path";
+import { fileURLToPath } from "url";
 import { WebSocketServer } from "ws";
 import { PokerGameService } from "./services/PokerGameService";
+
+// Get directory path in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load .env from root directory
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
@@ -16,7 +21,7 @@ const server = createServer(app);
 const wss = new WebSocketServer({ server });
 const gameService = new PokerGameService(wss);
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.BACKEND_PORT || 3001;
 const HOST = "0.0.0.0"; // Allow connections from any IP
 
 // API documentation endpoint

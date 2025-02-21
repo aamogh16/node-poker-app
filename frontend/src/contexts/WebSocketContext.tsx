@@ -12,12 +12,12 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-type MessageHandler = (message: any) => void;
+type MessageHandler = (message: unknown) => void;
 
 interface WebSocketContextType {
   socket: WebSocket | null;
   connected: boolean;
-  sendMessage: (message: any) => void;
+  sendMessage: (message: unknown) => void;
   addMessageListener: (handler: MessageHandler) => () => void;
 }
 
@@ -39,7 +39,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     function connect() {
       console.log("Attempting to create WebSocket connection...");
       ws = new WebSocket(
-        `ws://${process.env.NEXT_PUBLIC_WS_URL}:${process.env.NEXT_PUBLIC_WS_PORT}`
+        `ws://${process.env.WS_URL}:${process.env.BACKEND_PORT}`
       );
 
       ws.addEventListener("open", () => {
@@ -91,10 +91,10 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
       console.log("Cleaning up WebSocket connection");
       ws?.close();
     };
-  }, []); // Empty dependency array since messageHandlers is a Set
+  }, [messageHandlers]); // Empty dependency array since messageHandlers is a Set
 
   const sendMessage = useCallback(
-    (message: any) => {
+    (message: unknown) => {
       if (socket?.readyState === WebSocket.OPEN) {
         const messageStr = JSON.stringify(message);
         console.log("Sending WebSocket message:", messageStr);

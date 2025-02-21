@@ -16,13 +16,11 @@ The node-poker-app consists of a backend server that manages the game state and 
 Create a `.env` file in the root directory with the following variables:
 
 ```bash
-# Backend
-PORT=3001
-HOST=0.0.0.0
-
-# Frontend
-NEXT_PUBLIC_WS_URL=ws://localhost:3001
+BACKEND_PORT=3002    # Port for the backend server
+WS_URL=localhost     # WebSocket server hostname/IP
 ```
+
+These variables will be shared between the frontend and backend applications.
 
 ## How to Run
 

@@ -1,13 +1,17 @@
 import * as dotenv from "dotenv";
 import type { NextConfig } from "next";
 import path from "path";
+import { fileURLToPath } from "url";
 
-// Load .env from root directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const nextConfig: NextConfig = {
   env: {
-    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL!,
+    BACKEND_PORT: process.env.BACKEND_PORT!,
+    WS_URL: process.env.WS_URL!,
   },
 };
 
