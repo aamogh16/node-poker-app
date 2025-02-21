@@ -43,18 +43,23 @@ export default function PokerTable() {
         </button>
       </div>
 
-      {/* Pot */}
-      <div className="text-white text-center mb-8">
-        {gameState?.pot ? `Pot: $${gameState.pot}` : "Waiting for players..."}
-      </div>
-
       {/* Table */}
       <div className="relative w-[800px] h-[400px] mx-auto border-4 border-yellow-900 rounded-full bg-green-700">
-        {/* Community Cards - Now centered on the table */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center gap-2 min-h-[96px]">
-          {gameState?.communityCards?.map((card, i) => (
-            <CardComponent key={i} card={card} />
-          ))}
+        {/* Center Container for Community Cards and Pot */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
+          {/* Community Cards */}
+          <div className="flex justify-center gap-2 min-h-[96px]">
+            {gameState?.communityCards?.map((card, i) => (
+              <CardComponent key={i} card={card} />
+            ))}
+          </div>
+
+          {/* Pot Display */}
+          <div className="text-white text-xl font-bold mt-2">
+            {gameState?.pot
+              ? `Pot: $${gameState.pot}`
+              : "Waiting for players..."}
+          </div>
         </div>
 
         {/* Players */}
