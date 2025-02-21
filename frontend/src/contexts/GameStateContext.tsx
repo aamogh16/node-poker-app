@@ -107,6 +107,16 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
             return newState;
           });
           break;
+        case "handComplete":
+          console.log(
+            "GameStateContext: Hand complete, updating winners:",
+            message.winners
+          );
+          setGameState((prevState) => ({
+            ...prevState!,
+            winners: message.winners,
+          }));
+          break;
         case "notification":
           // You can handle notifications here, perhaps showing them in a toast
           console.log("Game notification:", message.message);
