@@ -13,7 +13,7 @@ export default function CardComponent({ card }: CardProps) {
   console.log("suit", suit);
 
   return (
-    <div className="w-16 h-24 text-lg bg-white rounded-lg shadow-lg flex items-center justify-center">
+    <div className="w-16 h-24 text-2xl bg-white rounded-lg shadow-lg flex items-center justify-center">
       <span
         className={`${
           suit === "h" || suit === "d" ? "text-red-600" : "text-black"
