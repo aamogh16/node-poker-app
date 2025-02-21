@@ -166,10 +166,36 @@ export class PokerGameService {
         this.handleHandComplete();
       }
     } catch (error: any) {
+      // Send error message to the player
       this.sendError(
         this.connectedPlayers.get(playerId)?.socket!,
         error.message
       );
+
+      // Automatically fold the player
+      try {
+        const player = this.table.players.find((p) => p?.id === playerId);
+        if (player && this.table.currentActor?.id === playerId) {
+          player.foldAction();
+
+          // Broadcast that the player was auto-folded
+          this.broadcast({
+            type: "notification",
+            message: `${
+              this.connectedPlayers.get(playerId)?.name || "Player"
+            } auto-folded due to invalid action: ${error.message}`,
+          });
+
+          this.broadcastGameState();
+
+          // Check if the hand is over after the fold
+          if (!this.table.currentRound) {
+            this.handleHandComplete();
+          }
+        }
+      } catch (foldError) {
+        console.error("Error during auto-fold:", foldError);
+      }
     }
   }
 

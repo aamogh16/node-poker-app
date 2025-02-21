@@ -103,6 +103,10 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
             return newState;
           });
           break;
+        case "notification":
+          // You can handle notifications here, perhaps showing them in a toast
+          console.log("Game notification:", message.message);
+          break;
         default:
           console.log(
             "GameStateContext: Unhandled message type:",
