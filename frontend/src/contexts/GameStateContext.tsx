@@ -28,8 +28,13 @@ interface GameState {
   pot: number;
   currentBet: number;
   currentActor: string | null;
-  currentRound: string | null;
   players: (Player | null)[];
+  winners?: Winner[];
+}
+
+interface Winner {
+  playerId: string;
+  amount: number;
 }
 
 interface PrivateState {
@@ -65,7 +70,7 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const removeListener = addMessageListener((message) => {
+    const removeListener = addMessageListener((message: any) => {
       console.log("GameStateContext: Received message:", message);
 
       switch (message.type) {
@@ -93,7 +98,6 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
                   pot: 0,
                   currentBet: 0,
                   currentActor: null,
-                  currentRound: null,
                   players: message.players,
                 };
             console.log(
