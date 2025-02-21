@@ -149,13 +149,16 @@ export class PokerGameService {
           const isRaisingToBigBlind =
             isPreFlop && isSmallBlindPosition && amount === this.table.bigBlind;
 
-          // Allow any amount for all-in or small blind to big blind raise
+          // For raises, the amount must increase the current bet by at least the big blind
+          const raiseAmount = amount! - this.table.currentBet;
           if (
             !isAllIn &&
             !isRaisingToBigBlind &&
-            amount < (this.table.lastRaise ?? this.table.bigBlind)
+            raiseAmount < this.table.bigBlind
           ) {
-            throw new Error("Raise must be at least the minimum raise amount");
+            throw new Error(
+              `Raise must increase the current bet by at least the big blind (${this.table.bigBlind})`
+            );
           }
           player.raiseAction(amount);
           break;
