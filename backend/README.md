@@ -5,6 +5,7 @@ This server hosts a poker game that bots can connect to via WebSocket. The serve
 ## Connecting Your Bot
 
 Connect to the WebSocket server at: `ws://SERVER_IP:${port}`
+
 - Define port in `.env` file: `PORT=...`
 
 ## Protocol
@@ -17,10 +18,11 @@ To join the game, send:
 {
   "type": "join",
   "playerId": "your-unique-id", // make this unique - only your team should know
-  "name": "Your Bot Name",
-  "buyIn": 1000
+  "name": "Your Bot Name"
 }
 ```
+
+All players automatically start with 1000 chips.
 
 ### Making Actions
 
@@ -120,8 +122,7 @@ def on_open(ws):
     ws.send(json.dumps({
         "type": "join",
         "playerId": str(uuid.uuid4()),
-        "name": "SimpleBot",
-        "buyIn": 1000
+        "name": "SimpleBot"
     }))
 
 ws = websocket.WebSocketApp(

@@ -71,10 +71,11 @@ export class PokerGameService {
     socket: WebSocket,
     playerId: string,
     name: string,
-    buyIn: number
+    buyIn: number // we'll ignore this parameter
   ) {
     try {
-      this.table.sitDown(playerId, buyIn);
+      const FIXED_BUY_IN = 1000;
+      this.table.sitDown(playerId, FIXED_BUY_IN);
       this.connectedPlayers.set(playerId, { id: playerId, name, socket });
 
       // Send initial state to the new player
@@ -88,11 +89,6 @@ export class PokerGameService {
         type: "players",
         players: this.getPublicPlayerStates(),
       });
-
-      // Remove auto-start
-      // if (this.table.players.filter((p) => p !== null).length >= 2) {
-      //   this.startNewHand();
-      // }
     } catch (error: any) {
       this.sendError(socket, error.message);
     }

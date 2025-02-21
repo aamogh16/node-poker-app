@@ -29,7 +29,7 @@ app.get("/", (req, res) => {
             type: "join",
             playerId: "string",
             name: "string",
-            buyIn: "number",
+            // removed buyIn as it's no longer used
           },
           action: {
             type: "action",
