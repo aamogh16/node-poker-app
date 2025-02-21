@@ -30,6 +30,7 @@ interface GameState {
   currentActor: string | null;
   players: (Player | null)[];
   winners?: Winner[];
+  currentRound?: string;
 }
 
 interface Winner {

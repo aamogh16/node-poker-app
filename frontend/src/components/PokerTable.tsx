@@ -99,9 +99,16 @@ export default function PokerTable() {
 
           {/* Pot Display */}
           <div className="text-white text-xl font-bold mt-2">
-            {gameState?.pot
-              ? `Pot: $${gameState.pot}`
-              : "Waiting for players..."}
+            {gameState?.currentRound ? (
+              <>
+                {gameState.pot > 0 && `Pot: $${gameState.pot}`}
+                <span className="block text-sm">
+                  Waiting for {gameState.currentRound} round to end...
+                </span>
+              </>
+            ) : (
+              "Waiting for players..."
+            )}
           </div>
         </div>
 
