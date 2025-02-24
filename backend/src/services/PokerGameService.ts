@@ -78,6 +78,13 @@ export class PokerGameService {
       this.table.sitDown(playerId, FIXED_BUY_IN);
       this.connectedPlayers.set(playerId, { id: playerId, name, socket });
 
+      // Broadcast name and id
+      this.broadcast({
+        type: "playerJoined",
+        playerId,
+        name,
+      });
+
       // Send initial state to the new player
       this.sendToPlayer(playerId, {
         type: "gameState",
