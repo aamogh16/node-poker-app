@@ -80,7 +80,7 @@ export default function PokerTable() {
       </div>
 
       {/* Table */}
-      <div className="relative w-[800px] h-[400px] mx-auto border-4 border-yellow-900 rounded-full bg-green-700">
+      <div className="relative w-[800px] h-[400px] mx-auto border-4 border-yellow-900 rounded-full bg-green-700 my-20">
         {/* Center Container for Community Cards and Pot */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
           {/* Winner Display */}
