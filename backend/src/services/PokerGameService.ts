@@ -74,6 +74,17 @@ export class PokerGameService {
     buyIn: number // we'll ignore this parameter
   ) {
     try {
+      // Check for duplicate names
+      const isDuplicateName = Array.from(this.connectedPlayers.values()).some(
+        (player) => player.name.toLowerCase() === name.toLowerCase()
+      );
+
+      if (isDuplicateName) {
+        throw new Error(
+          "A player with this name already exists. Please choose a different name."
+        );
+      }
+
       const FIXED_BUY_IN = 1000;
       this.table.sitDown(playerId, FIXED_BUY_IN);
       this.connectedPlayers.set(playerId, { id: playerId, name, socket });
