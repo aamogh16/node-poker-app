@@ -1,5 +1,6 @@
 import { Table } from "@chevtek/poker-engine";
 import { WebSocket, WebSocketServer } from "ws";
+import { FixedPlayer } from "./FixedPlayer";
 
 interface ConnectedPlayer {
   id: string;
@@ -14,6 +15,8 @@ export class PokerGameService {
 
   constructor(wss: WebSocketServer) {
     this.table = new Table(1000, 5, 10);
+    // Monkey patch the Table class to use our FixedPlayer
+    (this.table as any).Player = FixedPlayer;
     this.connectedPlayers = new Map();
     this.wss = wss;
   }
