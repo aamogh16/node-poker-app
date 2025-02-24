@@ -125,7 +125,11 @@ export class PokerGameService {
     }
   }
 
-  private handlePlayerAction(
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private async handlePlayerAction(
     playerId: string,
     action: string,
     amount?: number
@@ -135,6 +139,9 @@ export class PokerGameService {
       if (!player) throw new Error("Player not found");
       if (this.table.currentActor?.id !== playerId)
         throw new Error("Not your turn");
+
+      // Add 2-second delay before processing the action
+      await this.delay(2000);
 
       // Check if it's an all-in bet/raise
       const isAllIn = amount === player.stackSize;
@@ -151,7 +158,6 @@ export class PokerGameService {
           break;
         case "bet":
           if (amount === undefined) throw new Error("Amount required for bet");
-          // Allow any amount for all-in, otherwise enforce minimum bet
           if (!isAllIn && amount < this.table.bigBlind) {
             throw new Error("Bet must be at least the big blind");
           }
@@ -161,13 +167,11 @@ export class PokerGameService {
           if (amount === undefined)
             throw new Error("Amount required for raise");
 
-          // Special case for small blind raising to match big blind pre-flop
           const isPreFlop = !this.table.communityCards.length;
           const isSmallBlindPosition = player.bet === this.table.smallBlind;
           const isRaisingToBigBlind =
             isPreFlop && isSmallBlindPosition && amount === this.table.bigBlind;
 
-          // For raises, the amount must increase the current bet by at least the big blind
           const raiseAmount = amount! - (this.table.currentBet || 0);
           if (
             !isAllIn &&
@@ -191,19 +195,16 @@ export class PokerGameService {
         this.handleHandComplete();
       }
     } catch (error: any) {
-      // Send error message to the player
       this.sendError(
         this.connectedPlayers.get(playerId)?.socket!,
         error.message
       );
 
-      // Automatically fold the player
       try {
         const player = this.table.players.find((p) => p?.id === playerId);
         if (player && this.table.currentActor?.id === playerId) {
           player.foldAction();
 
-          // Broadcast that the player was auto-folded
           this.broadcast({
             type: "notification",
             message: `${
@@ -213,7 +214,6 @@ export class PokerGameService {
 
           this.broadcastGameState();
 
-          // Check if the hand is over after the fold
           if (!this.table.currentRound) {
             this.handleHandComplete();
           }
