@@ -259,8 +259,37 @@ export class PokerGameService {
       })),
     });
 
-    // Remove auto-start of next hand
-    // setTimeout(() => this.startNewHand(), 3000);
+    // Check for bankrupt players and remove them
+    this.table.players.forEach((player) => {
+      if (player && player.stackSize === 0) {
+        // Remove player from table
+        this.table.standUp(player);
+
+        // Remove from connected players
+        this.connectedPlayers.delete(player.id);
+
+        // Send message to the bankrupt player
+        this.sendToPlayer(player.id, {
+          type: "kicked",
+          message:
+            "You have been removed from the table due to insufficient funds.",
+        });
+
+        // Broadcast player removal to all players
+        this.broadcast({
+          type: "notification",
+          message: `${
+            this.connectedPlayers.get(player.id)?.name || "Player"
+          } has been removed from the table due to insufficient funds.`,
+        });
+      }
+    });
+
+    // Broadcast updated player list
+    this.broadcast({
+      type: "players",
+      players: this.getPublicPlayerStates(),
+    });
   }
 
   private getPlayerState(playerId: string) {
