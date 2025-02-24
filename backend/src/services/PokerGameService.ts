@@ -243,6 +243,7 @@ export class PokerGameService {
   private restartGame() {
     // Create fresh table
     this.table = new Table(1000, 5, 10);
+    (this.table as any).Player = FixedPlayer;
 
     // Clear all connected players
     this.connectedPlayers.clear();
