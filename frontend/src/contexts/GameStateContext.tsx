@@ -71,6 +71,7 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const removeListener = addMessageListener((message: any) => {
       console.log("GameStateContext: Received message:", message);
 

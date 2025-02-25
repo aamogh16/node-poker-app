@@ -21,8 +21,11 @@ COPY backend/ ./backend
 # Set working directory to backend
 WORKDIR /app/backend
 
+# Build the application
+RUN yarn build
+
 # Expose the port the app runs on
-EXPOSE 3001
+EXPOSE 3002
 
 # Start the application
-CMD ["yarn", "dev"]
+CMD ["yarn", "start"]

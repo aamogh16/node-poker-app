@@ -2,7 +2,7 @@ export class Card {
   private _rank: CardRank;
   private _suit: CardSuit;
 
-  constructor (rank: CardRank, suit: CardSuit) {
+  constructor(rank: CardRank, suit: CardSuit) {
     this._rank = rank;
     this._suit = suit;
   }
@@ -26,7 +26,7 @@ export class Card {
     }
   }
 
-  get suitChar () {
+  get suitChar() {
     switch (this._suit) {
       case CardSuit.CLUB:
         return "♣";
@@ -42,14 +42,14 @@ export class Card {
 
 export enum CardColor {
   RED = "#ff0000",
-  BLACK = "#000000"
+  BLACK = "#000000",
 }
 
 export enum CardSuit {
   CLUB = "c",
   DIAMOND = "d",
   HEART = "h",
-  SPADE = "s"
+  SPADE = "s",
 }
 
 export enum CardRank {
@@ -65,11 +65,5 @@ export enum CardRank {
   FIVE = "5",
   FOUR = "4",
   THREE = "3",
-  TWO = "2"
-}
-
-export interface Card {
-  color: CardColor
-  suit: CardSuit
-  value: CardRank
+  TWO = "2",
 }

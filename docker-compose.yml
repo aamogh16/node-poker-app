@@ -8,8 +8,8 @@ services:
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     environment:
-      - PORT=${BACKEND_PORT}
-      - HOST=0.0.0.0
+      - BACKEND_PORT=${BACKEND_PORT}
+      - HOST=${WS_URL}
     volumes:
       - ./backend:/app/backend
       - /app/backend/node_modules

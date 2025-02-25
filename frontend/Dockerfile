@@ -27,8 +27,11 @@ WORKDIR /app/frontend
 # Install dependencies again to ensure everything is in place
 RUN yarn install
 
+# Build the application
+RUN yarn build
+
 # Expose the port the app runs on
 EXPOSE 3000
 
 # Start the application
-CMD ["yarn", "dev"]
+CMD ["yarn", "start"]
