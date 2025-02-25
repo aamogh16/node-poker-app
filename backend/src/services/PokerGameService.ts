@@ -150,6 +150,9 @@ export class PokerGameService {
       // Check if it's an all-in bet/raise
       const isAllIn = amount === player.stackSize;
 
+      // Log Player Type
+      console.log("Player Type:", typeof player);
+
       switch (action) {
         case "call":
           player.callAction();
