@@ -1,9 +1,8 @@
 import { createRequire } from "module";
+import { Card, Table } from ".";
 const require = createRequire(import.meta.url);
 const pokersolver = require("pokersolver");
 const { Hand } = pokersolver;
-
-import { Card, Table } from ".";
 
 export class Player {
   bet: number = 0;
@@ -77,56 +76,62 @@ export class Player {
     if (this !== this.table.currentActor) {
       throw new Error("Action invoked on player out of turn!");
     }
+
     const legalActions = this.legalActions();
     if (!legalActions.includes("raise") && !legalActions.includes("bet")) {
       throw new Error("Illegal action.");
     }
+
     if (amount === undefined || isNaN(amount)) {
       throw new Error("Amount was not a valid number.");
     }
-    if (amount > this.stackSize) {
+
+    if (amount > this.stackSize + this.bet) {
       throw new Error("You cannot bet more than you brought to the table.");
     }
+
     const currentBet = this.table.currentBet;
     const lastRaise = this.table.lastRaise;
     const minRaise = lastRaise ?? this.table.bigBlind;
     const raiseAmount = currentBet ? amount - currentBet : amount;
-    // Do not allow the raise if it's less than the minimum and they aren't going all-in.
-    if (raiseAmount < minRaise && amount < this.stackSize) {
-      if (currentBet) {
-        throw new Error(
-          `You must raise by at least \`$${minRaise}\`, making the bet \`$${
-            minRaise + currentBet
-          }\`.`
-        );
-      } else {
-        throw new Error(`You must bet at least \`$${minRaise}\`.`);
-      }
-    } else if (raiseAmount < minRaise && amount >= this.stackSize) {
-      // When the all-in player is raising for less than the minimum raise then increase the bet amount but do not change last raise value.
-      this.bet += this.stackSize;
-      this.stackSize = 0;
-      this.table.currentBet = this.bet;
-    } else if (amount >= minRaise) {
-      this.stackSize -= raiseAmount;
-      this.bet += raiseAmount;
-      this.table.currentBet = this.bet;
-      // Only mark raise values if there is a current bet.
-      if (currentBet) {
-        this.raise = this.table.lastRaise = amount - currentBet;
-      }
-      // Set last action to the player behind this one.
-      this.table.lastPosition = this.table.currentPosition! - 1;
+
+    if (raiseAmount < minRaise && amount < this.stackSize + this.bet) {
+      throw new Error(
+        `You must raise by at least \`$${minRaise}\`, making the bet \`$${
+          minRaise + (currentBet ?? 0)
+        }\`.`
+      );
+    }
+
+    // Correct raise calculation
+    const newTotalBet = amount; // The total amount the player wants to be at
+    const additionalBet = newTotalBet - this.bet; // Difference from current bet
+
+    if (additionalBet > this.stackSize) {
+      throw new Error("You cannot bet more than your stack.");
+    }
+
+    this.stackSize -= additionalBet;
+    this.bet = newTotalBet;
+    this.table.currentBet = Math.max(this.table.currentBet ?? 0, this.bet);
+
+    // Update last raise amount if it's a valid raise
+    if (raiseAmount >= minRaise) {
+      this.raise = this.table.lastRaise = raiseAmount;
+    }
+
+    // Update last position correctly
+    this.table.lastPosition = this.table.currentPosition! - 1;
+    if (this.table.lastPosition === -1)
+      this.table.lastPosition = this.table.players.length - 1;
+
+    while (
+      !this.table.lastActor ||
+      !this.table.actingPlayers.includes(this.table.lastActor)
+    ) {
+      this.table.lastPosition--;
       if (this.table.lastPosition === -1)
         this.table.lastPosition = this.table.players.length - 1;
-      while (
-        !this.table.lastActor ||
-        !this.table.actingPlayers.includes(this.table.lastActor)
-      ) {
-        this.table.lastPosition--;
-        if (this.table.lastPosition === -1)
-          this.table.lastPosition = this.table.players.length - 1;
-      }
     }
 
     this.table.nextAction();
@@ -174,7 +179,7 @@ export class Player {
         if (
           this.stackSize > currentBet &&
           this.table.actingPlayers.length > 0 &&
-          (!lastRaise || !this.raise || lastRaise >= this.raise)
+          (!lastRaise || lastRaise <= this.stackSize)
         ) {
           actions.push("raise");
         }
