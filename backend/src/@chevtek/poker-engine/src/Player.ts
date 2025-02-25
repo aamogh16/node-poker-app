@@ -5,6 +5,7 @@ const pokersolver = require("pokersolver");
 const { Hand } = pokersolver;
 
 export class Player {
+  private _stackSize: number = 0;
   bet: number = 0;
   raise?: number;
   holeCards?: [Card, Card];
@@ -12,11 +13,17 @@ export class Player {
   showCards: boolean = false;
   left: boolean = false;
 
-  constructor(
-    public id: string,
-    public stackSize: number,
-    public table: Table
-  ) {}
+  constructor(public id: string, stackSize: number, public table: Table) {
+    this.stackSize = stackSize; // This will use the setter
+  }
+
+  get stackSize(): number {
+    return this._stackSize;
+  }
+
+  set stackSize(value: number) {
+    this._stackSize = Number(value.toFixed(2));
+  }
 
   get hand() {
     if (!this.holeCards) return null;
