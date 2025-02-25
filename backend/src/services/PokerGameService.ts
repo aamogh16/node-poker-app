@@ -1,4 +1,4 @@
-import { Table } from "@chevtek/poker-engine";
+import { Player, Table } from "@chevtek/poker-engine";
 import { WebSocket, WebSocketServer } from "ws";
 import { FixedPlayer } from "./FixedPlayer";
 
@@ -14,6 +14,10 @@ export class PokerGameService {
   private wss: WebSocketServer;
 
   constructor(wss: WebSocketServer) {
+    // Patch before creating the table
+    const originalTable = require("@chevtek/poker-engine").Table;
+    originalTable.Player = FixedPlayer;
+
     this.table = new Table(1000, 5, 10);
     // Replace the Player class and prototype
     (this.table.constructor as any).Player = FixedPlayer;
@@ -150,8 +154,11 @@ export class PokerGameService {
       // Check if it's an all-in bet/raise
       const isAllIn = amount === player.stackSize;
 
-      // Log Player Type
-      console.log("Player Type:", typeof player);
+      console.log("Player is instance of Player:", player instanceof Player);
+      console.log(
+        "Player is instance of FixedPlayer:",
+        player instanceof FixedPlayer
+      );
 
       switch (action) {
         case "call":
