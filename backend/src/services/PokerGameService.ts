@@ -366,6 +366,7 @@ export class PokerGameService {
     for (const [playerId, player] of this.connectedPlayers) {
       const currentPlayer = this.table.players.find((p) => p?.id === playerId);
       const isCurrentActor = this.table.currentActor?.id === playerId;
+      const currentBet = this.table.currentBet || 0;
 
       this.sendToPlayer(playerId, {
         type: "privateState",
@@ -374,8 +375,10 @@ export class PokerGameService {
           availableActions: isCurrentActor
             ? this.table.currentActor?.legalActions()
             : [],
-          minRaise: this.table.lastRaise ?? this.table.bigBlind,
-          maxBet: currentPlayer?.stackSize ?? 0,
+          // minRaise is now the minimum amount to raise TO
+          minRaise: currentBet + (this.table.lastRaise ?? this.table.bigBlind),
+          // maxBet is the total amount the player can bet TO
+          maxBet: (currentPlayer?.stackSize ?? 0) + (currentPlayer?.bet ?? 0),
         },
       });
     }

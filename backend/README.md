@@ -73,8 +73,8 @@ You'll receive these message types:
   "state": {
     "holeCards": ["As", "Ks"],
     "availableActions": ["fold", "call", "raise"],
-    "minBet": 20,
-    "maxBet": 1000
+    "minRaise": 40, // Minimum amount you must raise TO (not by)
+    "maxBet": 1000 // Maximum amount you can raise TO (your stack + current bet)
   }
 }
 ```
