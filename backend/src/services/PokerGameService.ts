@@ -1,7 +1,5 @@
-import { Player } from "@chevtek/poker-engine";
 import { WebSocket, WebSocketServer } from "ws";
-import { FixedPlayer } from "./FixedPlayer";
-import { FixedTable } from "./FixedTable";
+import { Table } from "../@chevtek/poker-engine/src";
 
 interface ConnectedPlayer {
   id: string;
@@ -10,12 +8,12 @@ interface ConnectedPlayer {
 }
 
 export class PokerGameService {
-  private table: FixedTable;
+  private table: Table;
   private connectedPlayers: Map<string, ConnectedPlayer>;
   private wss: WebSocketServer;
 
   constructor(wss: WebSocketServer) {
-    this.table = new FixedTable(1000, 5, 10);
+    this.table = new Table(1000, 5, 10);
     this.connectedPlayers = new Map();
     this.wss = wss;
   }
@@ -148,12 +146,6 @@ export class PokerGameService {
       // Check if it's an all-in bet/raise
       const isAllIn = amount === player.stackSize;
 
-      console.log("Player is instance of Player:", player instanceof Player);
-      console.log(
-        "Player is instance of FixedPlayer:",
-        player instanceof FixedPlayer
-      );
-
       switch (action) {
         case "call":
           player.callAction();
@@ -247,7 +239,7 @@ export class PokerGameService {
 
   private restartGame() {
     // Create fresh table
-    this.table = new FixedTable(1000, 5, 10);
+    this.table = new Table(1000, 5, 10);
 
     // Clear all connected players
     this.connectedPlayers.clear();
