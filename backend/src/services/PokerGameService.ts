@@ -15,8 +15,7 @@ export class PokerGameService {
 
   constructor(wss: WebSocketServer) {
     // Patch before creating the table
-    const originalTable = require("@chevtek/poker-engine").Table;
-    originalTable.Player = FixedPlayer;
+    (Table as any).constructor.Player = FixedPlayer;
 
     this.table = new Table(1000, 5, 10);
     // Replace the Player class and prototype
