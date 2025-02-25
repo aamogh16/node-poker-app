@@ -1,6 +1,7 @@
-import { Player, Table } from "@chevtek/poker-engine";
+import { Player } from "@chevtek/poker-engine";
 import { WebSocket, WebSocketServer } from "ws";
 import { FixedPlayer } from "./FixedPlayer";
+import { FixedTable } from "./FixedTable";
 
 interface ConnectedPlayer {
   id: string;
@@ -9,18 +10,12 @@ interface ConnectedPlayer {
 }
 
 export class PokerGameService {
-  private table: Table;
+  private table: FixedTable;
   private connectedPlayers: Map<string, ConnectedPlayer>;
   private wss: WebSocketServer;
 
   constructor(wss: WebSocketServer) {
-    // Patch before creating the table
-    (Table as any).constructor.Player = FixedPlayer;
-
-    this.table = new Table(1000, 5, 10);
-    // Replace the Player class and prototype
-    (this.table.constructor as any).Player = FixedPlayer;
-    (this.table as any).Player = FixedPlayer;
+    this.table = new FixedTable(1000, 5, 10);
     this.connectedPlayers = new Map();
     this.wss = wss;
   }
@@ -252,10 +247,7 @@ export class PokerGameService {
 
   private restartGame() {
     // Create fresh table
-    this.table = new Table(1000, 5, 10);
-    // Replace the Player class and prototype
-    (this.table.constructor as any).Player = FixedPlayer;
-    (this.table as any).Player = FixedPlayer;
+    this.table = new FixedTable(1000, 5, 10);
 
     // Clear all connected players
     this.connectedPlayers.clear();
