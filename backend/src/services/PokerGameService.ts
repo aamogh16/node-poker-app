@@ -141,7 +141,7 @@ export class PokerGameService {
         throw new Error("Not your turn");
 
       // Add 2-second delay before processing the action
-      await this.delay(2000);
+      await this.delay(500);
 
       // Check if it's an all-in bet/raise
       const isAllIn = amount === player.stackSize;
