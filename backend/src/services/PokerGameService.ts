@@ -15,7 +15,8 @@ export class PokerGameService {
 
   constructor(wss: WebSocketServer) {
     this.table = new Table(1000, 5, 10);
-    // Monkey patch the Table class to use our FixedPlayer
+    // Replace the Player class and prototype
+    (this.table.constructor as any).Player = FixedPlayer;
     (this.table as any).Player = FixedPlayer;
     this.connectedPlayers = new Map();
     this.wss = wss;
@@ -243,6 +244,8 @@ export class PokerGameService {
   private restartGame() {
     // Create fresh table
     this.table = new Table(1000, 5, 10);
+    // Replace the Player class and prototype
+    (this.table.constructor as any).Player = FixedPlayer;
     (this.table as any).Player = FixedPlayer;
 
     // Clear all connected players

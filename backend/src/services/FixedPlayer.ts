@@ -6,7 +6,7 @@ export class FixedPlayer extends Player {
   }
 
   raiseAction(amount: number) {
-    console.log("USING FIXED RAISE LOGIC");
+    console.log("FixedPlayer.raiseAction called with amount:", amount);
     if (this !== this.table.currentActor) {
       throw new Error("Action invoked on player out of turn!");
     }
