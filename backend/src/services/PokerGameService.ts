@@ -371,10 +371,9 @@ export class PokerGameService {
           availableActions: isCurrentActor
             ? this.table.currentActor?.legalActions()
             : [],
-          // minRaise is now the minimum amount to raise TO
           minRaise: currentBet + (this.table.lastRaise ?? this.table.bigBlind),
-          // maxBet is the total amount the player can bet TO
           maxBet: (currentPlayer?.stackSize ?? 0) + (currentPlayer?.bet ?? 0),
+          stackSize: currentPlayer?.stackSize ?? 0,
         },
       });
     }
