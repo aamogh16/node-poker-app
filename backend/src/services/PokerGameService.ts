@@ -140,6 +140,20 @@ export class PokerGameService {
       if (this.table.currentActor?.id !== playerId)
         throw new Error("Not your turn");
 
+      // Set the last action
+      player.lastAction = amount ? `${action} $${amount}` : action;
+
+      // Clear the last action after 2 seconds
+      setTimeout(() => {
+        if (player.lastAction) {
+          player.lastAction = undefined;
+          this.broadcast({
+            type: "players",
+            players: this.getPublicPlayerStates(),
+          });
+        }
+      }, 2000);
+
       // Check if it's an all-in bet/raise
       const isAllIn = amount === player.stackSize;
 
@@ -328,6 +342,7 @@ export class PokerGameService {
             bet: player.bet,
             folded: player.folded,
             isCurrentActor: this.table.currentActor?.id === player.id,
+            lastAction: player.lastAction, // Add this field
           }
         : null
     );

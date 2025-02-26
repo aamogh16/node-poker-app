@@ -16,6 +16,7 @@ interface Player {
   bet: number;
   folded: boolean;
   isCurrentActor: boolean;
+  lastAction?: string;
 }
 
 export interface Card {

@@ -7,6 +7,7 @@ interface PlayerSpotProps {
     bet: number;
     folded: boolean;
     isCurrentActor: boolean;
+    lastAction?: string;
   } | null;
   isCurrentPlayer: boolean;
   holeCards: unknown | null;
@@ -43,14 +44,17 @@ export default function PlayerSpot({ position, player }: PlayerSpotProps) {
 
   return (
     <div
-      className={`absolute w-32 h-24 -translate-x-1/2 -translate-y-1/2 
-        ${player?.isCurrentActor ? "ring-2 ring-yellow-400" : ""}`}
+      className={`absolute w-32 h-24 -translate-x-1/2 -translate-y-1/2`}
       style={{
         left: `calc(50% + ${x}px)`,
         top: `calc(50% + ${y}px)`,
       }}
     >
-      <div className="bg-gray-800 text-white p-2 rounded-lg shadow-lg">
+      <div
+        className={`flex flex-col bg-gray-800 text-white p-2 rounded-lg shadow-lg ${
+          player?.folded ? "opacity-50" : ""
+        } ${player?.isCurrentActor ? "ring-2 ring-yellow-400" : ""}`}
+      >
         {player ? (
           <>
             <div className="text-sm font-bold truncate">{player.name}</div>
@@ -60,6 +64,21 @@ export default function PlayerSpot({ position, player }: PlayerSpotProps) {
             )}
             {player.folded && (
               <div className="text-xs text-red-400">Folded</div>
+            )}
+            {player.lastAction && (
+              <div
+                className={`text-xs animate-fade-out font-bold px-2 py-1 mt-1 mx-auto w-3/4 text-center rounded-full inline-block
+                ${
+                  player.lastAction.startsWith("fold")
+                    ? "text-red-400 bg-red-800"
+                    : player.lastAction.startsWith("call") ||
+                      player.lastAction.startsWith("check")
+                    ? "text-green-400 bg-green-800"
+                    : "text-yellow-400 bg-yellow-800"
+                }`}
+              >
+                {player.lastAction}
+              </div>
             )}
           </>
         ) : (

@@ -12,6 +12,7 @@ export class Player {
   folded: boolean = false;
   showCards: boolean = false;
   left: boolean = false;
+  private _lastAction?: string;
 
   constructor(public id: string, stackSize: number, public table: Table) {
     this.stackSize = stackSize; // This will use the setter
@@ -23,6 +24,14 @@ export class Player {
 
   set stackSize(value: number) {
     this._stackSize = Number(value.toFixed(2));
+  }
+
+  get lastAction(): string | undefined {
+    return this._lastAction;
+  }
+
+  set lastAction(value: string | undefined) {
+    this._lastAction = value;
   }
 
   get hand() {
