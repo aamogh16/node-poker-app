@@ -269,19 +269,24 @@ export class PokerGameService {
   }
 
   private handleHandComplete() {
+    // Get winners with their hands
+    const winnersWithHands = this.table.winners?.map((w) => ({
+      playerId: w.id,
+      amount: this.table.pots.reduce(
+        (total, pot) =>
+          pot.winners?.includes(w)
+            ? total + pot.amount / (pot.winners?.length || 1)
+            : total,
+        0
+      ),
+      hand: w.hand.descr, // Add hand description
+      cards: w.holeCards, // Add hole cards
+    }));
+
     // Broadcast results
     this.broadcast({
       type: "handComplete",
-      winners: this.table.winners?.map((w) => ({
-        playerId: w.id,
-        amount: this.table.pots.reduce(
-          (total, pot) =>
-            pot.winners?.includes(w)
-              ? total + pot.amount / (pot.winners?.length || 1)
-              : total,
-          0
-        ),
-      })),
+      winners: winnersWithHands,
     });
 
     // Check for bankrupt players and remove them

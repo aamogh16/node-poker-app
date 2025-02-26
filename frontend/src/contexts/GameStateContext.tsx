@@ -37,6 +37,8 @@ interface GameState {
 interface Winner {
   playerId: string;
   amount: number;
+  hand: string;
+  cards: Card[];
 }
 
 interface PrivateState {

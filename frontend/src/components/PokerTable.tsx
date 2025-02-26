@@ -9,6 +9,8 @@ import PlayerSpot from "./PlayerSpot";
 interface Winner {
   playerId: string;
   amount: number;
+  hand: string;
+  cards: { _rank: string; _suit: string }[];
 }
 
 export default function PokerTable() {
@@ -144,6 +146,22 @@ export default function PokerTable() {
               player={gameState?.players?.[i] || null}
               isCurrentPlayer={false}
               holeCards={null}
+              winningHand={
+                showWinners
+                  ? winners.find(
+                      (w) => w.playerId === gameState?.players?.[i]?.id
+                    )
+                    ? {
+                        descr: winners.find(
+                          (w) => w.playerId === gameState?.players?.[i]?.id
+                        )!.hand,
+                        cards: winners.find(
+                          (w) => w.playerId === gameState?.players?.[i]?.id
+                        )!.cards,
+                      }
+                    : undefined
+                  : undefined
+              }
             />
           ))}
         </div>
