@@ -140,9 +140,6 @@ export class PokerGameService {
       if (this.table.currentActor?.id !== playerId)
         throw new Error("Not your turn");
 
-      // Add 2-second delay before processing the action
-      await this.delay(500);
-
       // Check if it's an all-in bet/raise
       const isAllIn = amount === player.stackSize;
 
@@ -187,6 +184,9 @@ export class PokerGameService {
         default:
           throw new Error("Invalid action");
       }
+
+      // Add 2-second delay after processing the action
+      await this.delay(500);
 
       this.broadcastGameState();
 
