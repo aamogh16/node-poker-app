@@ -42,8 +42,10 @@ export default function PokerTable() {
 
   if (!connected) {
     return (
-      <div className="min-h-screen bg-green-800 flex items-center justify-center">
-        <div className="text-white text-xl">Connecting to game server...</div>
+      <div className="min-h-screen bg-gradient-to-b from-green-900 to-green-800 flex items-center justify-center">
+        <div className="text-white text-xl font-medium">
+          Connecting to game server...
+        </div>
       </div>
     );
   }
@@ -62,66 +64,89 @@ export default function PokerTable() {
   };
 
   return (
-    <div className="min-h-screen bg-green-800 p-8 relative">
+    <div className="min-h-screen bg-gradient-to-b from-green-900 to-green-800 p-8 relative">
       {/* Control Buttons */}
-      <div className="absolute top-4 right-4 flex gap-4">
+      <div className="absolute top-4 right-4 flex gap-4 z-10">
         <button
           onClick={handleNewGame}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105 hover:shadow-xl"
         >
           Deal New Hand
         </button>
         <button
           onClick={handleRestart}
-          className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200"
+          className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105 hover:shadow-xl"
         >
           Restart Game
         </button>
       </div>
 
       {/* Table */}
-      <div className="relative w-[800px] h-[400px] mx-auto border-4 border-yellow-900 rounded-full bg-green-700 my-20">
-        {/* Center Container for Community Cards and Pot */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
-          {/* Winner Display */}
-          {showWinners && (
-            <div className="text-yellow-300 text-2xl font-bold mb-2 animate-bounce">
-              {getWinnerDisplay()}
-            </div>
-          )}
+      <div className="relative w-[900px] h-[450px] mx-auto my-20">
+        {/* Table Shadow */}
+        <div className="absolute inset-0 bg-green-900 rounded-[200px] blur-xl opacity-50"></div>
 
-          {/* Community Cards */}
-          <div className="flex justify-center gap-2 min-h-[96px]">
-            {gameState?.communityCards?.map((card, i) => (
-              <CardComponent key={i} card={card} />
-            ))}
-          </div>
+        {/* Main Table */}
+        <div className="relative w-full h-full border-8 border-yellow-900/80 rounded-[200px] bg-gradient-to-b from-green-700 to-green-600 shadow-2xl">
+          {/* Table Felt Pattern */}
+          <div
+            className="absolute inset-0 rounded-[192px] opacity-30"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          ></div>
 
-          {/* Pot Display */}
-          <div className="text-white text-xl font-bold mt-2">
-            {gameState?.currentRound ? (
-              <>
-                {gameState.pot > 0 && `Pot: $${gameState.pot}`}
-                <span className="block text-sm">
-                  Waiting for {gameState.currentRound} round to end...
-                </span>
-              </>
-            ) : (
-              "Waiting for players..."
+          {/* Table Rim Highlight */}
+          <div className="absolute inset-2 rounded-[190px] border border-yellow-500/20"></div>
+
+          {/* Center Container for Community Cards and Pot */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-6 z-10">
+            {/* Winner Display */}
+            {showWinners && (
+              <div className="text-yellow-300 text-3xl font-bold mb-2 animate-bounce drop-shadow-lg">
+                {getWinnerDisplay()}
+              </div>
             )}
-          </div>
-        </div>
 
-        {/* Players */}
-        {Array.from({ length: 9 }).map((_, i) => (
-          <PlayerSpot
-            key={i}
-            position={i}
-            player={gameState?.players?.[i] || null}
-            isCurrentPlayer={false}
-            holeCards={null}
-          />
-        ))}
+            {/* Community Cards */}
+            <div className="flex justify-center gap-3 min-h-[96px]">
+              {gameState?.communityCards?.map((card, i) => (
+                <CardComponent key={i} card={card} />
+              ))}
+            </div>
+
+            {/* Pot Display */}
+            <div className="text-white text-xl font-medium drop-shadow-lg">
+              {gameState?.currentRound ? (
+                <>
+                  {gameState.pot > 0 && (
+                    <div className="bg-black/30 px-6 py-2 rounded-full">
+                      Pot: ${gameState.pot}
+                    </div>
+                  )}
+                  <span className="block text-sm text-center mt-2 text-green-200">
+                    {gameState.currentRound} round
+                  </span>
+                </>
+              ) : (
+                <div className="text-green-200 animate-pulse">
+                  Waiting for players...
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Players */}
+          {Array.from({ length: 9 }).map((_, i) => (
+            <PlayerSpot
+              key={i}
+              position={i}
+              player={gameState?.players?.[i] || null}
+              isCurrentPlayer={false}
+              holeCards={null}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
