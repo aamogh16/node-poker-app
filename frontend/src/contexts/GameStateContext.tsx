@@ -53,7 +53,7 @@ interface PrivateState {
 interface GameStateContextType {
   gameState: GameState | null;
   privateState: PrivateState | null;
-  performAction: (action: string, amount?: number) => void;
+  performAction: (action: string, amount?: number, playerId?: string) => void;
 }
 
 const GameStateContext = createContext<GameStateContextType>({
@@ -145,7 +145,9 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
   }, [connected, addMessageListener]);
 
   const performAction = useCallback(
-    (action: string, amount?: number) => {
+    (action: string, amount?: number, playerId?: string) => {
+      if (!sendMessage) return;
+
       if (action === "startGame") {
         sendMessage({
           type: "startGame",
@@ -155,6 +157,12 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
         sendMessage({
           type: "restart",
           socketKey: process.env.SOCKET_KEY,
+        });
+      } else if (action === "kickPlayer") {
+        sendMessage({
+          type: "kickPlayer",
+          socketKey: process.env.SOCKET_KEY,
+          playerId: playerId,
         });
       } else {
         sendMessage({ type: "action", action, amount });

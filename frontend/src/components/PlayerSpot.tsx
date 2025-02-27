@@ -17,6 +17,7 @@ interface PlayerSpotProps {
   };
 }
 
+import { useGameState } from "@/contexts/GameStateContext";
 import CardComponent from "./Card";
 
 export default function PlayerSpot({
@@ -24,31 +25,14 @@ export default function PlayerSpot({
   player,
   winningHand,
 }: PlayerSpotProps) {
-  // Manual position mapping for 9 seats
-  // const getPosition = (pos: number): { x: number; y: number } => {
-  //   switch (pos) {
-  //     case 0: // Bottom center
-  //       return { x: 100, y: 250 };
-  //     case 1: // Bottom right
-  //       return { x: 380, y: 200 };
-  //     case 2: // Right
-  //       return { x: 450, y: 30 };
-  //     case 3: // Top right
-  //       return { x: 350, y: -160 };
-  //     case 4: // Top center
-  //       return { x: 0, y: -190 };
-  //     case 5: // Top left
-  //       return { x: -350, y: -160 };
-  //     case 6: // Left
-  //       return { x: -450, y: 30 };
-  //     case 7: // Bottom left
-  //       return { x: -360, y: 200 };
-  //     case 8: // Bottom center-left
-  //       return { x: -100, y: 250 };
-  //     default:
-  //       return { x: 0, y: 0 };
-  //   }
-  // };
+  const { performAction } = useGameState();
+
+  const handleKickPlayer = (e: React.MouseEvent, playerId: string) => {
+    e.stopPropagation();
+    if (confirm("Are you sure you want to kick this player?")) {
+      performAction("kickPlayer", undefined, playerId);
+    }
+  };
 
   const getPosition = (pos: number): { x: number; y: number } => {
     switch (pos) {
@@ -86,10 +70,31 @@ export default function PlayerSpot({
       }}
     >
       <div
-        className={`flex flex-col bg-gray-800 text-white p-2 rounded-lg shadow-lg ${
+        className={`relative flex flex-col bg-gray-800 text-white p-2 rounded-lg shadow-lg ${
           player?.folded ? "opacity-50" : ""
         } ${player?.isCurrentActor ? "ring-2 ring-yellow-400" : ""}`}
       >
+        {player && (
+          <button
+            onClick={(e) => handleKickPlayer(e, player.id)}
+            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors z-10"
+            title="Kick player"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 text-white"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        )}
+
         {player ? (
           <>
             <div className="text-sm font-bold truncate">{player.name}</div>
