@@ -18,6 +18,7 @@ interface PlayerSpotProps {
 }
 
 import { useGameState } from "@/contexts/GameStateContext";
+import { useEffect, useState } from "react";
 import CardComponent from "./Card";
 
 export default function PlayerSpot({
@@ -26,6 +27,24 @@ export default function PlayerSpot({
   winningHand,
 }: PlayerSpotProps) {
   const { performAction } = useGameState();
+  const [timeLeft, setTimeLeft] = useState(10);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (player?.isCurrentActor) {
+      setTimeLeft(10); // Reset timer when it becomes player's turn
+      interval = setInterval(() => {
+        setTimeLeft((prev) => Math.max(0, prev - 0.1));
+      }, 100);
+    } else {
+      setTimeLeft(10); // Reset timer when it's not player's turn
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [player?.isCurrentActor]);
 
   const handleKickPlayer = (e: React.MouseEvent, playerId: string) => {
     e.stopPropagation();
@@ -69,6 +88,19 @@ export default function PlayerSpot({
         top: `calc(50% + ${y}px)`,
       }}
     >
+      {/* Timer bar */}
+      {player?.isCurrentActor && (
+        <div className="absolute -top-2 left-0 w-full h-1 bg-gray-700 rounded overflow-hidden">
+          <div
+            className="h-full bg-yellow-400 transition-all duration-100 ease-linear"
+            style={{
+              width: `${(timeLeft / 10) * 100}%`,
+              backgroundColor: timeLeft <= 3 ? "#ef4444" : "#eab308",
+            }}
+          />
+        </div>
+      )}
+
       <div
         className={`relative flex flex-col bg-gray-800 text-white p-2 rounded-lg shadow-lg ${
           player?.folded ? "opacity-50" : ""

@@ -20,6 +20,8 @@ export class PokerGameService {
   private socketKey: string;
   private joinRequests: Map<string, JoinRequest>;
   private pendingSockets: Map<string, WebSocket>;
+  private turnTimer: NodeJS.Timeout | null = null;
+  private readonly TURN_TIMEOUT_MS = 10000; // 10 seconds
 
   constructor(wss: WebSocketServer) {
     this.table = new Table(1000, 5, 10);
@@ -191,6 +193,51 @@ export class PokerGameService {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  private startTurnTimer() {
+    // Clear any existing timer
+    if (this.turnTimer) {
+      clearTimeout(this.turnTimer);
+    }
+
+    // Get current actor
+    const currentActor = this.table.currentActor;
+    if (!currentActor) return;
+
+    // Start new timer
+    this.turnTimer = setTimeout(() => {
+      try {
+        // Check if the same player is still acting
+        if (this.table.currentActor?.id === currentActor.id) {
+          const player = this.table.players.find(
+            (p) => p?.id === currentActor.id
+          );
+          if (player) {
+            // Auto-fold the player
+            player.foldAction();
+
+            // Notify all players about the auto-fold
+            this.broadcast({
+              type: "notification",
+              message: `${
+                this.connectedPlayers.get(currentActor.id)?.name || "Player"
+              } auto-folded due to time limit (10 seconds)`,
+            });
+
+            // Update game state
+            this.broadcastGameState();
+
+            // Check if hand is complete
+            if (!this.table.currentRound) {
+              this.handleHandComplete();
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error during auto-fold:", error);
+      }
+    }, this.TURN_TIMEOUT_MS);
+  }
+
   private async handlePlayerAction(
     playerId: string,
     action: string,
@@ -201,6 +248,11 @@ export class PokerGameService {
       if (!player) throw new Error("Player not found");
       if (this.table.currentActor?.id !== playerId)
         throw new Error("Not your turn");
+
+      // Clear the turn timer since the player acted
+      if (this.turnTimer) {
+        clearTimeout(this.turnTimer);
+      }
 
       // Set the last action
       player.lastAction = amount ? `${action} $${amount}` : action;
@@ -270,6 +322,9 @@ export class PokerGameService {
       if (!this.table.currentRound) {
         this.handleHandComplete();
       }
+
+      // After successful action, start timer for next player
+      this.startTurnTimer();
     } catch (error: any) {
       this.sendError(
         this.connectedPlayers.get(playerId)?.socket!,
@@ -390,6 +445,10 @@ export class PokerGameService {
   }
 
   private handleHandComplete() {
+    if (this.turnTimer) {
+      clearTimeout(this.turnTimer);
+      this.turnTimer = null;
+    }
     // Get winners with their hands
     const winnersWithHands = this.table.winners?.map((w) => ({
       playerId: w.id,
