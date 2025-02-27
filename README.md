@@ -29,16 +29,18 @@ These variables will be shared between the frontend and backend applications.
 ## How to Run
 
 1. Create the `.env` file in the root directory as described above
-2. Open two separate terminal windows.
-3. In the first terminal:
-   ```bash
-   cd backend
+2. Open a terminal and run the following based on your desired config:
+
+   **Development**
+   ```
+   yarn
    yarn dev
    ```
-4. In the second terminal:
-   ```bash
-   cd frontend
-   yarn dev
+
+   **Docker-based production build**
+   ```
+   yarn docker:build
+   yarn docker:up
    ```
 
 ## Documentation
