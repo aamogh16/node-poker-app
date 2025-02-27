@@ -43,6 +43,6 @@ These variables will be shared between the frontend and backend applications.
    yarn docker:up
    ```
 
-## Documentation
+## Socket Documentation
 
 For detailed information about the WebSocket API and how to interact with the poker server, please refer to the README.md file in the backend folder.
