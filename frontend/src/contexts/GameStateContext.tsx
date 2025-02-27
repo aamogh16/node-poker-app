@@ -50,22 +50,31 @@ interface PrivateState {
   availableActions: string[];
 }
 
+interface JoinRequest {
+  playerId: string;
+  playerName: string;
+  timestamp: number;
+}
+
 interface GameStateContextType {
   gameState: GameState | null;
   privateState: PrivateState | null;
   performAction: (action: string, amount?: number, playerId?: string) => void;
+  joinRequests: JoinRequest[];
 }
 
 const GameStateContext = createContext<GameStateContextType>({
   gameState: null,
   privateState: null,
   performAction: () => {},
+  joinRequests: [],
 });
 
 export function GameStateProvider({ children }: { children: React.ReactNode }) {
   const { connected, sendMessage, addMessageListener } = useWebSocket();
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [privateState, setPrivateState] = useState<PrivateState | null>(null);
+  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
 
   useEffect(() => {
     console.log(
@@ -130,6 +139,9 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
           // You can handle notifications here, perhaps showing them in a toast
           console.log("Game notification:", message.message);
           break;
+        case "joinRequests":
+          setJoinRequests(message.requests);
+          break;
         default:
           console.log(
             "GameStateContext: Unhandled message type:",
@@ -148,24 +160,36 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
     (action: string, amount?: number, playerId?: string) => {
       if (!sendMessage) return;
 
-      if (action === "startGame") {
-        sendMessage({
-          type: "startGame",
-          socketKey: process.env.SOCKET_KEY,
-        });
-      } else if (action === "restart") {
-        sendMessage({
-          type: "restart",
-          socketKey: process.env.SOCKET_KEY,
-        });
-      } else if (action === "kickPlayer") {
-        sendMessage({
-          type: "kickPlayer",
-          socketKey: process.env.SOCKET_KEY,
-          playerId: playerId,
-        });
-      } else {
-        sendMessage({ type: "action", action, amount });
+      switch (action) {
+        case "startGame":
+          sendMessage({
+            type: "startGame",
+            socketKey: process.env.SOCKET_KEY,
+          });
+          break;
+        case "restart":
+          sendMessage({
+            type: "restart",
+            socketKey: process.env.SOCKET_KEY,
+          });
+          break;
+        case "kickPlayer":
+          sendMessage({
+            type: "kickPlayer",
+            socketKey: process.env.SOCKET_KEY,
+            playerId: playerId,
+          });
+          break;
+        case "approveJoin":
+        case "rejectJoin":
+          sendMessage({
+            type: action,
+            socketKey: process.env.SOCKET_KEY,
+            playerId,
+          });
+          break;
+        default:
+          sendMessage({ type: "action", action, amount });
       }
     },
     [sendMessage]
@@ -173,7 +197,7 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <GameStateContext.Provider
-      value={{ gameState, privateState, performAction }}
+      value={{ gameState, privateState, performAction, joinRequests }}
     >
       {children}
     </GameStateContext.Provider>

@@ -7,20 +7,38 @@ interface ConnectedPlayer {
   socket: WebSocket;
 }
 
+interface JoinRequest {
+  id: string;
+  name: string;
+  timestamp: number;
+}
+
 export class PokerGameService {
   private table: Table;
   private connectedPlayers: Map<string, ConnectedPlayer>;
   private wss: WebSocketServer;
   private socketKey: string;
+  private joinRequests: Map<string, JoinRequest>;
+  private pendingSockets: Map<string, WebSocket>;
 
   constructor(wss: WebSocketServer) {
     this.table = new Table(1000, 5, 10);
     this.connectedPlayers = new Map();
     this.wss = wss;
     this.socketKey = process.env.SOCKET_KEY || "";
+    this.joinRequests = new Map();
+    this.pendingSockets = new Map();
   }
 
   handleConnection(socket: WebSocket) {
+    // Clear any stale requests for this socket
+    for (const [playerId, pendingSocket] of this.pendingSockets.entries()) {
+      if (pendingSocket === socket) {
+        this.joinRequests.delete(playerId);
+        this.pendingSockets.delete(playerId);
+      }
+    }
+
     socket.on("message", (message: string) => {
       try {
         const data = JSON.parse(message);
@@ -31,7 +49,16 @@ export class PokerGameService {
     });
 
     socket.on("close", () => {
-      // Find and remove disconnected player
+      // Clean up any pending requests for this socket
+      for (const [playerId, pendingSocket] of this.pendingSockets.entries()) {
+        if (pendingSocket === socket) {
+          this.joinRequests.delete(playerId);
+          this.pendingSockets.delete(playerId);
+          this.broadcastJoinRequests();
+        }
+      }
+
+      // Handle player disconnect
       for (const [playerId, player] of this.connectedPlayers.entries()) {
         if (player.socket === socket) {
           this.handlePlayerLeave(playerId);
@@ -42,74 +69,102 @@ export class PokerGameService {
   }
 
   private handleMessage(socket: WebSocket, message: any) {
-    // Handle admin commands that require socket key
-    if (["kickPlayer", "startGame", "restart"].includes(message.type)) {
-      if (message.socketKey !== this.socketKey) {
-        this.sendError(socket, "Unauthorized admin action");
-        return;
-      }
-
+    try {
       switch (message.type) {
+        case "join":
+          // Instead of direct join, create a join request
+          this.handleJoinRequest(socket, message.playerId, message.name);
+          break;
+        case "action":
+          this.handlePlayerAction(
+            message.playerId,
+            message.action,
+            message.amount
+          );
+          break;
+        case "requestJoin":
+          this.handleJoinRequest(socket, message.playerId, message.name);
+          break;
+        case "approveJoin":
+          if (message.socketKey !== this.socketKey) {
+            this.sendError(socket, "Unauthorized admin action");
+            return;
+          }
+          // Add playerId validation
+          if (!message.playerId || !this.joinRequests.has(message.playerId)) {
+            this.sendError(socket, "Invalid player ID or request not found");
+            return;
+          }
+          this.approveJoinRequest(message.playerId);
+          break;
+        case "rejectJoin":
+          if (message.socketKey !== this.socketKey) {
+            this.sendError(socket, "Unauthorized admin action");
+            return;
+          }
+          this.rejectJoinRequest(message.playerId);
+          break;
         case "kickPlayer":
+          if (message.socketKey !== this.socketKey) {
+            this.sendError(socket, "Unauthorized admin action");
+            return;
+          }
           this.kickPlayer(message.playerId);
-          return;
+          break;
         case "startGame":
+          if (message.socketKey !== this.socketKey) {
+            this.sendError(socket, "Unauthorized admin action");
+            return;
+          }
           this.startNewHand();
-          return;
+          break;
         case "restart":
+          if (message.socketKey !== this.socketKey) {
+            this.sendError(socket, "Unauthorized admin action");
+            return;
+          }
           this.restartGame();
-          return;
+          break;
+        default:
+          this.sendError(socket, "Unknown message type");
       }
-    }
-
-    // Handle regular player actions
-    switch (message.type) {
-      case "join":
-        this.handlePlayerJoin(socket, message.playerId, message.name);
-        break;
-      case "action":
-        this.handlePlayerAction(
-          message.playerId,
-          message.action,
-          message.amount
-        );
-        break;
-      default:
-        this.sendError(socket, "Unknown message type");
+    } catch (error: any) {
+      this.sendError(socket, error.message);
     }
   }
 
   private handlePlayerJoin(socket: WebSocket, playerId: string, name: string) {
     try {
-      // Check for duplicate names
-      const isDuplicateName = Array.from(this.connectedPlayers.values()).some(
-        (player) => player.name.toLowerCase() === name.toLowerCase()
-      );
+      const FIXED_BUY_IN = 1000;
 
-      if (isDuplicateName) {
-        throw new Error(
-          "A player with this name already exists. Please choose a different name."
-        );
+      // Find first available seat
+      let seatNumber = 0;
+      while (
+        this.table.players[seatNumber] !== null &&
+        seatNumber < this.table.players.length
+      ) {
+        seatNumber++;
       }
 
-      const FIXED_BUY_IN = 1000;
-      this.table.sitDown(playerId, FIXED_BUY_IN);
+      if (seatNumber >= this.table.players.length) {
+        throw new Error("No available seats!");
+      }
+
+      this.table.sitDown(playerId, FIXED_BUY_IN, seatNumber);
       this.connectedPlayers.set(playerId, { id: playerId, name, socket });
 
-      // Broadcast name and id
+      // Broadcast updates
       this.broadcast({
         type: "playerJoined",
         playerId,
         name,
       });
 
-      // Send initial state to the new player
       this.sendToPlayer(playerId, {
         type: "gameState",
         state: this.getPlayerState(playerId),
       });
 
-      // Broadcast updated player list to all players
       this.broadcast({
         type: "players",
         players: this.getPublicPlayerStates(),
@@ -271,16 +326,26 @@ export class PokerGameService {
         message: "Admin has reset the game. All players must rejoin.",
       });
 
-      // Close all existing socket connections
-      for (const [playerId, player] of this.connectedPlayers) {
+      // Store current sockets to close them after reset
+      const socketsToClose = new Set<WebSocket>();
+      this.connectedPlayers.forEach((player) => {
         if (player.socket.readyState === WebSocket.OPEN) {
-          player.socket.close();
+          socketsToClose.add(player.socket);
         }
-      }
+      });
+      this.pendingSockets.forEach((socket) => {
+        if (socket.readyState === WebSocket.OPEN) {
+          socketsToClose.add(socket);
+        }
+      });
 
       // Clear all game state
       this.table = new Table(1000, 5, 10);
+
+      // Clear all player-related maps
       this.connectedPlayers.clear();
+      this.joinRequests.clear();
+      this.pendingSockets.clear();
 
       // Force cleanup of the table
       this.table.cleanUp();
@@ -291,12 +356,28 @@ export class PokerGameService {
       this.table.lastRaise = undefined;
       this.table.currentRound = undefined;
 
-      // Close all remaining WebSocket connections
-      this.wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.close();
+      // Clear all players from table
+      for (let i = 0; i < this.table.players.length; i++) {
+        if (this.table.players[i]) {
+          this.table.players[i] = null;
+        }
+      }
+
+      // Force close all stored socket connections
+      socketsToClose.forEach((socket) => {
+        try {
+          socket.terminate();
+        } catch (err) {
+          console.error("Error closing client connection:", err);
         }
       });
+
+      // Broadcast empty state to clear UI
+      this.broadcast({
+        type: "players",
+        players: this.getPublicPlayerStates(),
+      });
+      this.broadcastJoinRequests();
 
       console.log("Game has been fully reset");
     } catch (error) {
@@ -473,6 +554,10 @@ export class PokerGameService {
       // Remove from connected players
       this.connectedPlayers.delete(playerId);
 
+      // Remove any pending join requests
+      this.joinRequests.delete(playerId);
+      this.pendingSockets.delete(playerId);
+
       // Broadcast player removal
       this.broadcast({
         type: "notification",
@@ -485,8 +570,93 @@ export class PokerGameService {
         players: this.getPublicPlayerStates(),
       });
 
-      // Close their socket connection
-      player.socket.close();
+      // Force close their socket connection
+      if (player.socket.readyState === WebSocket.OPEN) {
+        player.socket.terminate();
+      }
     }
+  }
+
+  private handleJoinRequest(socket: WebSocket, playerId: string, name: string) {
+    // Check for duplicate names
+    const isDuplicateName = Array.from(this.connectedPlayers.values()).some(
+      (player) => player.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (isDuplicateName) {
+      this.sendError(socket, "Name already taken");
+      return;
+    }
+
+    // Clear any existing request for this player ID
+    if (this.joinRequests.has(playerId)) {
+      const oldSocket = this.pendingSockets.get(playerId);
+      if (oldSocket && oldSocket !== socket) {
+        oldSocket.close();
+      }
+    }
+
+    const request: JoinRequest = {
+      id: playerId,
+      name,
+      timestamp: Date.now(),
+    };
+
+    this.joinRequests.set(playerId, request);
+    this.pendingSockets.set(playerId, socket);
+
+    // Broadcast updated join requests
+    this.broadcastJoinRequests();
+
+    console.log(`New join request from ${name} (${playerId})`);
+  }
+
+  private approveJoinRequest(playerId: string) {
+    const request = this.joinRequests.get(playerId);
+    const socket = this.pendingSockets.get(playerId);
+
+    if (!request || !socket) {
+      console.log("Request or socket not found for playerId:", playerId);
+      return;
+    }
+
+    // Handle the actual player join
+    this.handlePlayerJoin(socket, playerId, request.name);
+
+    // Clean up the request and pending socket
+    this.joinRequests.delete(playerId);
+    this.pendingSockets.delete(playerId);
+
+    // Broadcast updated join requests to all clients
+    this.broadcastJoinRequests();
+
+    console.log(`Approved join request for player ${playerId}`);
+  }
+
+  private rejectJoinRequest(playerId: string) {
+    const socket = this.pendingSockets.get(playerId);
+    if (socket) {
+      this.sendError(socket, "Your join request was rejected");
+      socket.close();
+    }
+
+    this.joinRequests.delete(playerId);
+    this.pendingSockets.delete(playerId);
+    this.broadcastJoinRequests();
+  }
+
+  private broadcastJoinRequests() {
+    const requests = Array.from(this.joinRequests.values()).map((request) => ({
+      playerId: request.id,
+      playerName: request.name,
+      timestamp: request.timestamp,
+    }));
+
+    this.broadcast({
+      type: "joinRequests",
+      requests: requests,
+    });
+
+    console.log("Broadcasting join requests:", requests);
   }
 }

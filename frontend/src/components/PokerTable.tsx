@@ -4,6 +4,7 @@ import { useGameState } from "@/contexts/GameStateContext";
 import { useWebSocket } from "@/contexts/WebSocketContext";
 import { useEffect, useState } from "react";
 import CardComponent from "./Card";
+import JoinRequestsSidebar from "./JoinRequestsSidebar";
 import PlayerSpot from "./PlayerSpot";
 
 interface Winner {
@@ -67,6 +68,9 @@ export default function PokerTable() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-900 to-green-800 p-8 relative">
+      {/* Always render the sidebar - it will self-hide if there are no requests */}
+      <JoinRequestsSidebar />
+
       {/* Control Buttons */}
       <div className="absolute top-4 right-4 flex gap-4 z-10">
         <button
