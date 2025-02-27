@@ -1,5 +1,5 @@
 import { createRequire } from "module";
-import { Card, Table } from ".";
+import { Card, Table } from "../src";
 const require = createRequire(import.meta.url);
 const pokersolver = require("pokersolver");
 const { Hand } = pokersolver;
@@ -113,8 +113,7 @@ export class Player {
 
     if (raiseAmount < minRaise && amount < this.stackSize + this.bet) {
       throw new Error(
-        `You must raise by at least \`$${minRaise}\`, making the bet \`$${
-          minRaise + (currentBet ?? 0)
+        `You must raise by at least \`$${minRaise}\`, making the bet \`$${minRaise + (currentBet ?? 0)
         }\`.`
       );
     }

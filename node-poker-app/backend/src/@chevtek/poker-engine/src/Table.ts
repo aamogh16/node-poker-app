@@ -3,7 +3,7 @@ const require = createRequire(import.meta.url);
 const pokersolver = require("pokersolver");
 const { Hand } = pokersolver;
 
-import { Card, CardRank, CardSuit, Player } from ".";
+import { Card, CardRank, CardSuit, Player } from "../src";
 
 export class Table {
   public autoMoveDealer: boolean = true;
@@ -435,9 +435,9 @@ export class Table {
     // Remove any folded players from pot eligibility.
     this.pots.forEach(
       (pot) =>
-        (pot.eligiblePlayers = pot.eligiblePlayers.filter(
-          (player) => !player.folded && !player.left
-        ))
+      (pot.eligiblePlayers = pot.eligiblePlayers.filter(
+        (player) => !player.folded && !player.left
+      ))
     );
   }
 
