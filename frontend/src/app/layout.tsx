@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/contexts/AuthContext";
 import { GameStateProvider } from "@/contexts/GameStateContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
 import type { Metadata } from "next";
@@ -23,9 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.variable} font-poppins antialiased`}>
-        <WebSocketProvider>
-          <GameStateProvider>{children}</GameStateProvider>
-        </WebSocketProvider>
+        <AuthProvider>
+          <WebSocketProvider>
+            <GameStateProvider>{children}</GameStateProvider>
+          </WebSocketProvider>
+        </AuthProvider>
       </body>
     </html>
   );

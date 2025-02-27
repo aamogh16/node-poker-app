@@ -26,6 +26,7 @@ services:
       - BACKEND_PORT=${BACKEND_PORT}
       - WS_URL=${WS_URL}
       - SOCKET_KEY=${SOCKET_KEY}
+      - ADMIN_PASS_HASH=${ADMIN_PASS_HASH}
     volumes:
       - ./frontend:/app/frontend
     depends_on:
