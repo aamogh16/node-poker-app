@@ -1,11 +1,15 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
+
 First, define the backend host and port to point to in your `.env` file:
+
 - `NEXT_PUBLIC_WS_URL=<host>`
 - `NEXT_PUBLIC_WS_PORT=<port>`
+- `SOCKET_KEY=<admin-socket-key>` // Required for admin actions like deal and restart
 
 Then, run the development server:
+
 ```bash
 yarn dev
 ```

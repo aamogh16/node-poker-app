@@ -10,6 +10,7 @@ services:
     environment:
       - BACKEND_PORT=${BACKEND_PORT}
       - HOST=${WS_URL}
+      - SOCKET_KEY=${SOCKET_KEY}
     volumes:
       - ./backend:/app/backend
       - /app/backend/node_modules
@@ -24,9 +25,9 @@ services:
     environment:
       - BACKEND_PORT=${BACKEND_PORT}
       - WS_URL=${WS_URL}
+      - SOCKET_KEY=${SOCKET_KEY}
     volumes:
       - ./frontend:/app/frontend
-      - /app/frontend/node_modules
     depends_on:
       - backend
     restart: unless-stopped

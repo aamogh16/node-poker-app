@@ -11,11 +11,13 @@ export class PokerGameService {
   private table: Table;
   private connectedPlayers: Map<string, ConnectedPlayer>;
   private wss: WebSocketServer;
+  private socketKey: string;
 
   constructor(wss: WebSocketServer) {
     this.table = new Table(1000, 5, 10);
     this.connectedPlayers = new Map();
     this.wss = wss;
+    this.socketKey = process.env.SOCKET_KEY || "";
   }
 
   handleConnection(socket: WebSocket) {
@@ -40,14 +42,30 @@ export class PokerGameService {
   }
 
   private handleMessage(socket: WebSocket, message: any) {
+    // Handle admin commands that require socket key
+    if (["kickPlayer", "startGame", "restart"].includes(message.type)) {
+      if (message.socketKey !== this.socketKey) {
+        this.sendError(socket, "Unauthorized admin action");
+        return;
+      }
+
+      switch (message.type) {
+        case "kickPlayer":
+          this.kickPlayer(message.playerId);
+          return;
+        case "startGame":
+          this.startNewHand();
+          return;
+        case "restart":
+          this.restartGame();
+          return;
+      }
+    }
+
+    // Handle regular player actions
     switch (message.type) {
       case "join":
-        this.handlePlayerJoin(
-          socket,
-          message.playerId,
-          message.name,
-          message.buyIn
-        );
+        this.handlePlayerJoin(socket, message.playerId, message.name);
         break;
       case "action":
         this.handlePlayerAction(
@@ -56,23 +74,12 @@ export class PokerGameService {
           message.amount
         );
         break;
-      case "startGame":
-        this.startNewHand();
-        break;
-      case "restart":
-        this.restartGame();
-        break;
       default:
         this.sendError(socket, "Unknown message type");
     }
   }
 
-  private handlePlayerJoin(
-    socket: WebSocket,
-    playerId: string,
-    name: string,
-    buyIn: number // we'll ignore this parameter
-  ) {
+  private handlePlayerJoin(socket: WebSocket, playerId: string, name: string) {
     try {
       // Check for duplicate names
       const isDuplicateName = Array.from(this.connectedPlayers.values()).some(
@@ -242,6 +249,11 @@ export class PokerGameService {
     try {
       this.table.dealCards();
       this.broadcastGameState();
+
+      this.broadcast({
+        type: "notification",
+        message: "Admin has started a new hand",
+      });
     } catch (error) {
       console.error("Error starting new hand:", error);
       this.broadcast({
@@ -252,20 +264,48 @@ export class PokerGameService {
   }
 
   private restartGame() {
-    // Create fresh table
-    this.table = new Table(1000, 5, 10);
+    try {
+      // First notify all clients about the restart
+      this.broadcast({
+        type: "gameReset",
+        message: "Admin has reset the game. All players must rejoin.",
+      });
 
-    // Clear all connected players
-    this.connectedPlayers.clear();
+      // Close all existing socket connections
+      for (const [playerId, player] of this.connectedPlayers) {
+        if (player.socket.readyState === WebSocket.OPEN) {
+          player.socket.close();
+        }
+      }
 
-    // Broadcast the reset to all players
-    this.broadcast({
-      type: "gameReset",
-      message: "Game has been reset. All players must rejoin.",
-    });
+      // Clear all game state
+      this.table = new Table(1000, 5, 10);
+      this.connectedPlayers.clear();
 
-    // Broadcast empty game state
-    this.broadcastGameState();
+      // Force cleanup of the table
+      this.table.cleanUp();
+      this.table.communityCards = [];
+      delete this.table.winners;
+      this.table.pots = [];
+      this.table.currentBet = 0;
+      this.table.lastRaise = undefined;
+      this.table.currentRound = undefined;
+
+      // Close all remaining WebSocket connections
+      this.wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.close();
+        }
+      });
+
+      console.log("Game has been fully reset");
+    } catch (error) {
+      console.error("Error during game restart:", error);
+      this.broadcast({
+        type: "error",
+        error: "Failed to restart game properly",
+      });
+    }
   }
 
   private handleHandComplete() {
@@ -413,5 +453,40 @@ export class PokerGameService {
     const messageStr = JSON.stringify(message);
     console.log("Sending error message:", messageStr);
     socket.send(messageStr);
+  }
+
+  private kickPlayer(playerId: string) {
+    const player = this.connectedPlayers.get(playerId);
+    if (player) {
+      // Send kick message to the player
+      this.sendToPlayer(playerId, {
+        type: "kicked",
+        message: "You have been kicked from the game",
+      });
+
+      // Remove player from table
+      const tablePlayer = this.table.players.find((p) => p?.id === playerId);
+      if (tablePlayer) {
+        this.table.standUp(tablePlayer);
+      }
+
+      // Remove from connected players
+      this.connectedPlayers.delete(playerId);
+
+      // Broadcast player removal
+      this.broadcast({
+        type: "notification",
+        message: `${player.name} has been kicked from the game`,
+      });
+
+      // Update all clients with new player list
+      this.broadcast({
+        type: "players",
+        players: this.getPublicPlayerStates(),
+      });
+
+      // Close their socket connection
+      player.socket.close();
+    }
   }
 }

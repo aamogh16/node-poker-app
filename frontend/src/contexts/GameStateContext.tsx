@@ -9,6 +9,10 @@ import React, {
 } from "react";
 import { useWebSocket } from "./WebSocketContext";
 
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
 interface Player {
   id: string;
   name: string;
@@ -143,9 +147,15 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
   const performAction = useCallback(
     (action: string, amount?: number) => {
       if (action === "startGame") {
-        sendMessage({ type: "startGame" });
+        sendMessage({
+          type: "startGame",
+          socketKey: process.env.SOCKET_KEY,
+        });
       } else if (action === "restart") {
-        sendMessage({ type: "restart" });
+        sendMessage({
+          type: "restart",
+          socketKey: process.env.SOCKET_KEY,
+        });
       } else {
         sendMessage({ type: "action", action, amount });
       }

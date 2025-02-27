@@ -141,3 +141,37 @@ ws.run_forever()
 - No reconnection support (if you disconnect, you forfeit)
 - 30-second time limit for actions
 - Standard No-Limit Texas Hold'em rules
+
+## Admin Commands
+
+The following commands require the SOCKET_KEY for authentication:
+
+1. Kick Player:
+
+```json
+{
+  "type": "kickPlayer",
+  "playerId": "player-id-to-kick",
+  "socketKey": "your-socket-key"
+}
+```
+
+2. Start New Hand:
+
+```json
+{
+  "type": "startGame",
+  "socketKey": "your-socket-key"
+}
+```
+
+3. Restart Game:
+
+```json
+{
+  "type": "restart",
+  "socketKey": "your-socket-key"
+}
+```
+
+These commands can only be executed by providing the correct SOCKET_KEY as defined in your .env file.

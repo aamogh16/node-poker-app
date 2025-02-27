@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
   env: {
     BACKEND_PORT: process.env.BACKEND_PORT!,
     WS_URL: process.env.WS_URL!,
+    SOCKET_KEY: process.env.SOCKET_KEY!,
   },
 };
 
