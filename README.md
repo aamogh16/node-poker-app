@@ -2,6 +2,8 @@
 
 This project is a full-stack poker application built using the `@chevtek/poker-engine` library. It provides a server for hosting poker games and a frontend interface for players to interact with the game.
 
+_Originally made for the Northeastern ACM Algorithmic Poker Hackathon - a comprehensive bot template for this can be found [here!](https://github.com/akala47/acm_pokerbot)_
+
 ## Description
 
 The node-poker-app consists of a backend server that manages the game state and a frontend client for user interaction. It utilizes WebSocket connections to enable real-time communication between the server and clients.
